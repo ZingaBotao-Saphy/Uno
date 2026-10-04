@@ -1,4 +1,4 @@
-enum Colour{
+enum COLOUR{
     RED,
     GREEN,
     BLUE,
@@ -6,7 +6,7 @@ enum Colour{
     BLACK,
 }
 
-enum Face{
+enum FACE{
     NUMBER,
     SKIP,
     REVERSE,
