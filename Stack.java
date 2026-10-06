@@ -8,14 +8,14 @@ public class Stack{
     
     public ArrayList<Card> shuffle(ArrayList<Card> sortedCards){
         ArrayList<Card> shuffledCards = new ArrayList<>();
-        System.out.println("shuffling...");
 
-        // TODO: does this remove from the actual array?
         while (!sortedCards.isEmpty()){
             int index = random.nextInt(sortedCards.size());
+            if (sortedCards.get(index).face.contains(FACE.WILD)){
+                sortedCards.get(index).colour = COLOUR.BLACK;
+            }
             shuffledCards.add(sortedCards.remove(index));
         }
-        System.out.println("shuffled!");
         return shuffledCards;
     }
 }

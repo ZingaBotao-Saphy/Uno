@@ -8,6 +8,7 @@ public class Player{
     Scanner scanner = new Scanner(System.in);
 
     ArrayList<Card> cards = new ArrayList<>();
+    ArrayList<Card> availableCards = new ArrayList<>();
     String name;
     int turn; // 0 it is their turn, 1 they're the next, 2 second next...
     boolean unoCall = false;  // ask player for input at the end of each round ENTER is play, "c" is change, UNO is uno
@@ -17,8 +18,8 @@ public class Player{
         this.game = game;
     }
 
-    public ArrayList<Card> getAvailableCards(){
-        ArrayList<Card> availableCards = new ArrayList<>();
+    public void getAvailableCards(){
+        availableCards.clear();
         for (Card c : cards){
             Card topCard = game.stack.cards.getLast();
             if (c.face.contains(FACE.WILD)
@@ -28,16 +29,15 @@ public class Player{
                 availableCards.add(c);
             }
         }
-        return availableCards;
     }
 
     public void selectCard(){
-        ArrayList<Card> availableCards = getAvailableCards();
+        getAvailableCards();
         int availableSize = availableCards.size();
 
-        System.out.println("All cards:\n");
+        System.out.println("All cards:");
         for (int i = 0; i < cards.size(); i++) {
-            System.out.println(cards.get(i).display());
+            System.out.print(cards.get(i).display() + ", ");
         }
 
         if (availableSize > 1){
@@ -68,10 +68,16 @@ public class Player{
     }
 
     private void placeCard(int cardIndex){
-        Card card = cards.get(cardIndex);
+        Card card = availableCards.get(cardIndex);
+        System.out.println("Placing " + card.display());
+        scanner.nextLine(); // to clear buffer
         System.out.println("Call: ");
         String call = scanner.nextLine();
         unoCall = validCall(call);
+        if (card.face.contains(FACE.WILD)){
+            card.colour = chooseColour();
+        }
+
         game.unoSystem(this);
         game.stack.cards.addLast(card);
 
@@ -91,10 +97,28 @@ public class Player{
                 return true;
             default:
                 System.out.println("Insert a valid call: ");
+                scanner.nextLine();
                 String newCall = scanner.next();
                 validCall(newCall);
         }
         return false;
+    }
+
+    private COLOUR chooseColour(){
+        System.out.println("Choose:\n (r) RED | (g) GREEN | (b) BLUE | y (YELLOW)");
+        String letter = scanner.nextLine();
+        switch (letter.trim().toLowerCase()){
+            case "r":
+                return COLOUR.RED;
+            case "g":
+                return COLOUR.GREEN;
+            case "b":
+                return COLOUR.BLUE;
+            case "y":
+                return COLOUR.YELLOW;
+            default:
+                return chooseColour();
+        }
     }
 }
 
