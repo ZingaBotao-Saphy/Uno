@@ -6,10 +6,3 @@ enum COLOUR{
     BLACK,
 }
 
-enum FACE{
-    NUMBER,
-    SKIP,
-    REVERSE,
-    DRAW,
-    WILD,
-}
