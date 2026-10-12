@@ -8,7 +8,7 @@ public class Deck{
     Random random = new Random();
 
     ArrayList<Card> cards = new ArrayList<>();
-    //ask somewhere fo start cards
+    //ask somewhere to select start cards number
     int START_CARDS = 7;
     
     public Deck(Game game){
@@ -21,8 +21,7 @@ public class Deck{
         int number = -1;
         int destination = 1;
         int drawNumber = 0;
-
-        int MAX_CARDS = 108;
+        
         int COLOUR_MAX = 19;
         int SPECIAL_MAX = 8;
         int SPECIAL_COLOUR_MAX = 2;

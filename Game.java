@@ -1,7 +1,10 @@
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
+import java.util.Scanner;
 
 public class Game{
+    Scanner scanner = new Scanner(System.in);
     Random random = new Random();
     ArrayList<Player> players = new ArrayList<>();
     Deck deck;
@@ -44,7 +47,11 @@ public class Game{
         insertPlayers();
         deck.dealCards();
         System.out.println("First player is: " + firstPlayer.name);
-        firstPlayer.selectCard();
+        firstPlayer.selectCard(true);
+    }
+
+    private void EndGame(){
+        scanner.close();
     }
 
     public void changeTurn(boolean playerWon, Player currentPlayer){
@@ -75,54 +82,73 @@ public class Game{
             else{
                 System.out.println("Destination: " + destination);
                 if (destination == -1){
-                    players.getFirst().turn = players.get(players.size()-1 - skipIndex).turn;
+                    Player firstPlayeri = players.getFirst();
+                    firstPlayeri.turn = players.get(players.size()-1 - skipIndex).turn;
+                    if (firstPlayeri.turn == 0){
+                        nextPlayer = firstPlayeri;
+                    }
                     pos = 1;
-                    System.out.println("player" + players.getFirst() + players.getFirst().turn);
                 }
                 else if (destination == 1){
-                    players.getLast().turn = players.get(0 + skipIndex).turn;
+                    Player lastPlayer = players.getLast();
+                    lastPlayer.turn = players.get(0 + skipIndex).turn;
+                    if (lastPlayer.turn == 0){
+                        nextPlayer = lastPlayer;
+                    }                   
                     neg = -1;
                 }
-                System.out.println("printint" + players.size());
                 for (int i = 0 + pos; i < players.size() + neg; i++){
-                    
-                    players.get(i).turn = i + destination * skip;
-                    System.out.println("Player: " + players.get(i).name + " Turn: " + players.get(i).turn);
+                    System.out.println("i: " + i + "dest: " + destination + "skip: " + skip);
+                    players.get(i).turn += destination * skip;
                     if (players.get(i).turn == 0){
                         nextPlayer = players.get(i);
                     }
                     else if (players.get(i).turn == players.size() - 1 && skip == 2){
-                        System.out.println(players.get(i) + " got skipped");
+                        System.out.println(players.get(i).name + " got skipped");
                     }
                 }
             }
         }
+
+        // Reverse works
         else{
             for (Player p : players){
                 if (playerWon){
                     players.remove(currentPlayer);
                 }
-                turns.add(p.turn);
+                turns.add(p.turn * 10);
             }
-            turns.reversed();
+            List<Integer> reversedTurns = turns.reversed();
             for (int i = 0; i < players.size(); i++){
-                players.get(i).turn = turns.get(i);
-                System.out.println("Player: " + players.get(i).name + " Turn: " + players.get(i).turn);
+                System.out.println(reversedTurns);
+                players.get(i).turn = reversedTurns.get(i) / 10;
                 if (players.get(i).turn == 0){
                     nextPlayer = players.get(i);
                 }
             }
             System.out.println("It's rewind time!");
         }
-        System.out.println("Turn: " + nextPlayer.name);
+
+
+        
         if (topCard.face.contains(FACE.DRAW)){
-            ArrayList<Card> drawnCards = deck.drawCards(topCard.drawNumber);
-            for (Card c : drawnCards) {
-                nextPlayer.cards.add(c);
-            }   
+            deck.drawCards(topCard.drawNumber);
             System.out.println(nextPlayer.name + " drew " + topCard.drawNumber + " cards");
         }
-        nextPlayer.selectCard();
+
+        for (int i = 0; i < players.size(); i++){
+            if (players.get(i).turn < 0){
+                players.get(i).turn = players.size() - players.get(i).turn;
+            }
+            else if (players.get(i).turn >= players.size()){
+                System.out.println(players.get(i).name + players.get(i).turn + "TOO BIG");
+                players.get(i).turn = players.get(i).turn - players.size();
+            }
+            System.out.println(players.get(i).name + " Turn: " + players.get(i).turn);
+            
+        }
+        System.out.println("Turn: " + nextPlayer.name);
+        nextPlayer.selectCard(true);
     }
 
     public void unoSystem(Player player){
