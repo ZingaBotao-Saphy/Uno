@@ -48,21 +48,17 @@ public class Deck{
             for (int i = 0; i < SPECIAL_COLOUR_MAX; i++){ //-2 to exclude black
                 for (int s = 1; s < FACE.values().length - 2; s++){
 
-                    switch (FACE.values()[s]) {
-                        case REVERSE:
-                            destination = -1;
-                            break;
-
-                        case DRAW:
+                    switch (FACE.values()[s]){
+                        case REVERSE -> destination = -1;
+                        case DRAW -> {
                             drawNumber = 2;
                             number = 2;
-                            break;
-
-                        default:
+                        }
+                        default -> {
                             number = -1;
                             drawNumber = 0;
                             destination = 1;
-                            break;
+                        }
                     }
 
                     // if (FACE.values()[s].equals(FACE.REVERSE)){
@@ -122,12 +118,16 @@ public class Deck{
     public ArrayList<Card> drawCards(int drawNumber){
         ArrayList<Card> drawnCards = new ArrayList<>();
 
+        System.out.println("Drawing " + drawNumber + " cards...");
         if (drawNumber > cards.size()){
             cards = game.stack.shuffle(game.stack.cards);
         }
 
+        System.out.println("Cards drawn:");
         for (int i = 0; i < drawNumber; i++){
-            drawnCards.add(cards.removeLast());
+            Card drawnCard = cards.removeLast();
+            drawnCards.add(drawnCard);
+            System.out.println(drawnCard.display());
         }
 
         return drawnCards;

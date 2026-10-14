@@ -7,7 +7,6 @@ public class Player{
     ArrayList<Card> cards = new ArrayList<>();
     ArrayList<Card> availableCards = new ArrayList<>();
     String name;
-    int turn; // 0 it is their turn, 1 they're the next, 2 second next...
     boolean unoCall = false;  // ask player for input at the end of each round ENTER is play, "c" is change, UNO is uno
 
     public Player(String name, Game game){
@@ -18,7 +17,7 @@ public class Player{
     private void getAvailableCards(){
         availableCards.clear();
         for (Card c : cards){
-            Card topCard = game.stack.cards.getLast();
+            Card topCard = game.stack.getTopCard();
             if (c.face.contains(FACE.WILD)
             || c.number == topCard.number 
             || c.colour.equals(topCard.colour) 
@@ -32,8 +31,7 @@ public class Player{
         getAvailableCards();
         int availableSize = availableCards.size();
 
-        System.out.println("All cards:");
-        System.out.println(cards.size());
+        System.out.println("All cards (" + cards.size() + "):");
         for (int i = 0; i < cards.size(); i++) {
             System.out.print(cards.get(i).display() + ", ");
         }
@@ -61,12 +59,14 @@ public class Player{
             System.out.println("Only one card available.");
             placeCard(0);
         }
-        else if (drawOne){
-            game.deck.drawCards(1);
+        else if (availableSize == 0 && drawOne){
+            System.out.println("No cards available");
+            cards.addAll(game.deck.drawCards(1));
             selectCard(false);
         }
-        else{
-            game.changeTurn(false, this);
+        else if (availableSize == 0){
+            System.out.println("No cards available");
+            game.changeTurn();
         }
     }
 
@@ -75,31 +75,29 @@ public class Player{
         System.out.println("Placing " + card.display());
         game.scanner.nextLine(); // to clear buffer
         String call = game.scanner.nextLine();
-        unoCall = validCall(call);
+        unoCall = validCall(call); // can be if validcall then call unosystem
         if (card.face.contains(FACE.WILD)){
             card.colour = chooseColour();
         }
 
         game.unoSystem(this);
         game.stack.cards.addLast(card);
-        game.changeTurn(false, this);
+        cards.remove(card);
+        game.changeTurn();
     }
 
     private boolean validCall(String call){
         System.out.println("Call: ");
-        switch (call.trim().toUpperCase()) {
-            case "":
-                return false;
-            case "C":
-                selectCard(true);
-                break;
-            case "UNO":
-                return true;
-            default:
+        switch (call.trim().toUpperCase()){
+            case "" -> {return false;}
+            case "C" -> selectCard(true);
+            case "UNO" -> {return true;}
+            default -> {
                 System.out.println("Insert a valid call: ");
                 game.scanner.nextLine();
                 String newCall = game.scanner.next();
                 validCall(newCall);
+            }
         }
         return false;
     }

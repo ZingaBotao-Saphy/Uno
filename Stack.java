@@ -18,4 +18,13 @@ public class Stack{
         }
         return shuffledCards;
     }
+
+    public  Card getTopCard(){
+        if (!cards.isEmpty()){
+            return cards.getLast();
+        }
+        else{
+            return null;
+        }
+    }
 }

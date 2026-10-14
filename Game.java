@@ -1,5 +1,4 @@
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -7,16 +6,27 @@ public class Game{
     Scanner scanner = new Scanner(System.in);
     Random random = new Random();
     ArrayList<Player> players = new ArrayList<>();
+    ArrayList<Player> winners = new ArrayList<>();
     Deck deck;
     Stack stack;
-    Player firstPlayer;
+    int turn = 0;
+    int direction = 1;
 
     public Game() {
         stack = new Stack();       
         deck = new Deck(this);
     }
 
-    public void insertPlayers(){
+    private Player getCurrentPlayer(){
+        if (!players.isEmpty()){
+            return players.get(turn);
+        }
+        else{
+            return null;
+        }
+    }
+
+    private void insertPlayers(){
         // some code to determine how many players there are and their names
 
         ArrayList<String> names = new ArrayList<>();
@@ -24,21 +34,15 @@ public class Game{
         names.add("Saphy");
         names.add("Shaun");
         names.add("Wenjie");
+        int i = 0;
         while (!names.isEmpty()){
             int currentIndex = random.nextInt(names.size());
             String name = names.get(currentIndex);
             Player player = new Player(name, this);
             players.add(player);
             names.remove(name);
-        }
-
-        // initialise players
-        for (int i = 0; i < players.size(); i++) {
-            players.get(i).turn = i;
-            if (players.get(i).turn == 0){
-                firstPlayer = players.get(i);
-            }
-            System.out.println("Player: " + players.get(i).name + " Turn: " + players.get(i).turn);
+            System.out.println("Player: " + players.get(i).name + " Turn: " + i);
+            i++;
         }
     }
 
@@ -46,42 +50,84 @@ public class Game{
         deck.createDeck();
         insertPlayers();
         deck.dealCards();
-        System.out.println("First player is: " + firstPlayer.name);
-        firstPlayer.selectCard(true);
+        System.out.println("First player is: " + getCurrentPlayer().name);
+        getCurrentPlayer().selectCard(true);
     }
 
     private void EndGame(){
         scanner.close();
+        System.out.println("Game over!");
+        for (int i = 0; i < winners.size(); i++){
+            System.out.println(i + ":" + winners.get(i).name);
+        }
     }
 
-    public void changeTurn(boolean playerWon, Player currentPlayer){
+    public void changeTurn(){
+        int skip = 0;
+        Card topCard = stack.getTopCard();
+        Player currentPlayer = getCurrentPlayer();
+
+        System.out.println("Turn changes from: " + currentPlayer.name);
+
+        if (topCard.face.contains(FACE.REVERSE)){
+            direction = -(direction);
+        }
+        else if (topCard.face.contains(FACE.SKIP)){
+            skip = 1;
+        }
+
+        System.out.println(direction);
+        turn = turn + direction + (skip * direction);
+
+        if (turn < 0){
+            System.out.println("too small" + turn);
+            turn = players.size() + turn;
+            System.out.println(turn);
+        }
+        else if (turn >= players.size()){
+            System.out.println("too big");
+            turn = turn - players.size();
+            System.out.println(turn);
+        }
+
+        Player nextPlayer = getCurrentPlayer();
+        System.out.println("Turn changes to: " + nextPlayer.name);
+
+        if (topCard.face.contains(FACE.DRAW)){
+            nextPlayer.cards.addAll(deck.drawCards(topCard.drawNumber));
+        }
+        nextPlayer.selectCard(true);
+    }
+
+    /*
+    public void changeTurn(boolean playerWon, Player getCurrentPlayer()){
         ArrayList<Integer> turns = new ArrayList<>();
-        Card topCard = stack.cards.getLast();
+        Card getTopCard() = stack.cards.getLast();
         Player nextPlayer = new Player("Default", this);
-        int destination = topCard.destination;
+        int direction = getTopCard().direction;
         int skipIndex = 0;
         int skip = 1;
         int pos = 0;
         int neg = 0;
         
-        System.out.println("Top card: " + topCard.display());
+        System.out.println("Top card: " + getTopCard().display());
         
-        if (topCard.face.contains(FACE.SKIP)){
+        if (getTopCard().face.contains(FACE.SKIP)){
             skipIndex = 1;
             skip = 2;
         }
 
 
-        if (!topCard.face.contains(FACE.REVERSE)){
+        if (!getTopCard().face.contains(FACE.REVERSE)){
             if (playerWon){
-                players.remove(currentPlayer);
+                players.remove(getCurrentPlayer());
                 for (Player p : players){
-                    p.turn = destination * skip;
+                    p.turn = direction * skip;
                 }
             }
             else{
-                System.out.println("Destination: " + destination);
-                if (destination == -1){
+                System.out.println("direction: " + direction);
+                if (direction == -1){
                     Player firstPlayeri = players.getFirst();
                     firstPlayeri.turn = players.get(players.size()-1 - skipIndex).turn;
                     if (firstPlayeri.turn == 0){
@@ -89,7 +135,7 @@ public class Game{
                     }
                     pos = 1;
                 }
-                else if (destination == 1){
+                else if (direction == 1){
                     Player lastPlayer = players.getLast();
                     lastPlayer.turn = players.get(0 + skipIndex).turn;
                     if (lastPlayer.turn == 0){
@@ -98,8 +144,8 @@ public class Game{
                     neg = -1;
                 }
                 for (int i = 0 + pos; i < players.size() + neg; i++){
-                    System.out.println("i: " + i + "dest: " + destination + "skip: " + skip);
-                    players.get(i).turn += destination * skip;
+                    System.out.println("i: " + i + "dest: " + direction + "skip: " + skip);
+                    players.get(i).turn += direction * skip;
                     if (players.get(i).turn == 0){
                         nextPlayer = players.get(i);
                     }
@@ -114,7 +160,7 @@ public class Game{
         else{
             for (Player p : players){
                 if (playerWon){
-                    players.remove(currentPlayer);
+                    players.remove(getCurrentPlayer());
                 }
                 turns.add(p.turn * 10);
             }
@@ -131,9 +177,9 @@ public class Game{
 
 
         
-        if (topCard.face.contains(FACE.DRAW)){
-            deck.drawCards(topCard.drawNumber);
-            System.out.println(nextPlayer.name + " drew " + topCard.drawNumber + " cards");
+        if (getTopCard().face.contains(FACE.DRAW)){
+            deck.drawCards(getTopCard().drawNumber);
+            System.out.println(nextPlayer.name + " drew " + getTopCard().drawNumber + " cards");
         }
 
         for (int i = 0; i < players.size(); i++){
@@ -150,18 +196,31 @@ public class Game{
         System.out.println("Turn: " + nextPlayer.name);
         nextPlayer.selectCard(true);
     }
+    */
 
+   // need to figure out how this works with draw card
     public void unoSystem(Player player){
-        if (player.cards.isEmpty() && !stack.cards.getLast().face.contains(FACE.DRAW)){
+        if (player.cards.isEmpty() && !stack.getTopCard().face.contains(FACE.DRAW)){
             if (player.unoCall){
-                System.out.println(player.name + "won!");
-                changeTurn(true, player);
+                playerWon();
             }
             else{
                 player.cards.add(deck.cards.removeLast());
                 player.cards.add(deck.cards.removeLast());
+                changeTurn();
             }
         }        
+    }
+
+    public void playerWon(){
+        if (winners.isEmpty()){
+            System.out.println(getCurrentPlayer().name + " won!");
+        }
+        else{
+            System.out.println(getCurrentPlayer().name + " finished!");
+        }
+        players.remove(turn);
+        changeTurn();
     }
 }
 
@@ -170,28 +229,28 @@ public class Game{
 
 // no skip: skipIndex = 0, skip = 1
 // with skip: skipIndex = 1, skip = 2
-// destination -1
+// direction -1
 // (0)first gets (5 - skipIndex)last turn. 
 // 4 3 2 1 0 5
 // 5 4 3 2 1 0
 // 0 1 2 3 4 5
 
-// get turn of index + destination * skip
+// get turn of index + direction * skip
 
-// destination 1
+// direction 1
 // (5)last gets (0 + skipIndex)first turn.
 // 4 3 2 1 0 5
 // 3 2 1 0 5 4
 // 2 1 0 5 4 3
 
 
-// skip, destination multiplied (in order)
+// skip, direction multiplied (in order)
 
 // (0)first becomes (4)second last turn.
 // 0 1 2 3 4 5
 // 4 5 0 1 2 3
 
-// get turn of index + -2(destination) GLOBAL
+// get turn of index + -2(direction) GLOBAL
 
 // (5)last becomes (1)second first turn.
 // 4 5 0 1 2 3
@@ -204,7 +263,7 @@ public class Game{
 // two pointers with storage
 
 // player won
-// remove player with turn 0, every turn + index + destination // too hard im doing --turn * skip
+// remove player with turn 0, every turn + index + direction // too hard im doing --turn * skip
 // 0 1 2 3 4 5
 // n 0 1 2 3 4
 

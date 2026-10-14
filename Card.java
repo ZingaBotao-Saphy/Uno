@@ -6,30 +6,30 @@ public class Card{
     COLOUR colour;
     int number;
     int drawNumber;
-    int destination; // 1 is forward, -1 is backward
+    int direction; // 1 is forward, -1 is backward
 
     public Card(ArrayList<FACE> face, COLOUR colour) {
         this(face, colour, -1, 0, 1);
     }
 
-    public Card(ArrayList<FACE> face, COLOUR colour, int number, int drawNumber, int destination) {
+    public Card(ArrayList<FACE> face, COLOUR colour, int number, int drawNumber, int direction) {
         this.face = face;
         this.colour = colour;
         this.number = number;
         this.drawNumber = drawNumber;
-        this.destination = destination;
+        this.direction = direction;
     }
 
     public String display(){
         String draw = "";
         String facePart = face.toString();
         if (drawNumber != 0){
-            draw = "D: " + drawNumber;
+            draw = " D: " + drawNumber;
         }
         if (face.contains(FACE.NUMBER)){
             facePart = Integer.toString(number);
         }
 
-        return colour + " " + facePart + " " + draw;
+        return colour + " " + facePart + draw;
     }
 }
