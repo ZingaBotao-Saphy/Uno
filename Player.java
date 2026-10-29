@@ -7,7 +7,7 @@ public class Player{
     ArrayList<Card> cards = new ArrayList<>();
     ArrayList<Card> availableCards = new ArrayList<>();
     String name;
-    boolean unoCall = false;  // ask player for input at the end of each round ENTER is play, "c" is change, UNO is uno
+    boolean unoCall = false;
 
     public Player(String name, Game game){
         this.name = name;
@@ -19,7 +19,7 @@ public class Player{
         for (Card c : cards){
             Card topCard = game.stack.getTopCard();
             if (c.face.contains(FACE.WILD)
-            || c.number == topCard.number 
+            || ((c.number != -1) && (c.number == topCard.number))
             || c.colour.equals(topCard.colour) 
             || (c.face.containsAll(topCard.face) && !c.face.contains(FACE.NUMBER))){
                 availableCards.add(c);
@@ -32,31 +32,33 @@ public class Player{
         int availableSize = availableCards.size();
 
         System.out.println("All cards (" + cards.size() + "):");
-        for (int i = 0; i < cards.size(); i++) {
-            System.out.print(cards.get(i).display() + ", ");
+        for (int i = 0; i < cards.size(); i++){
+            System.out.print("| " + cards.get(i).display() + " |");
         }
+        System.out.println("");
 
         if (availableSize > 1){
             for (int i = 0; i < availableSize; i++){
-                System.out.println("\n" + i + ": " + availableCards.get(i).display());
+                System.out.println(i + ": " + availableCards.get(i).display());
             }
 
             System.out.println("Which card would you like? (0-" + (availableSize-1) + ")");
             while (true){ 
                 try{
                     int desiredCard = game.scanner.nextInt(); 
-                    if (desiredCard >= 0 && desiredCard < availableSize) {
+                    game.scanner.nextLine();
+                    if (desiredCard >= 0 && desiredCard < availableSize){
                         placeCard(desiredCard);
                         return;
                     }
                 } catch (InputMismatchException e){
-                    game.scanner.next();
+                    game.scanner.nextLine();
                 }
                 System.out.println("Enter a valid number.(0-" + (availableSize-1) + ")");
             }
         }
         else if (availableSize == 1){
-            System.out.println("Only one card available.");
+            System.out.println("Only one card available: " + availableCards.getFirst().display());
             placeCard(0);
         }
         else if (availableSize == 0 && drawOne){
@@ -72,31 +74,34 @@ public class Player{
 
     private void placeCard(int cardIndex){
         Card card = availableCards.get(cardIndex);
-        System.out.println("Placing " + card.display());
-        game.scanner.nextLine(); // to clear buffer
-        String call = game.scanner.nextLine();
-        unoCall = validCall(call); // can be if validcall then call unosystem
+
         if (card.face.contains(FACE.WILD)){
             card.colour = chooseColour();
         }
 
-        game.unoSystem(this);
+        unoCall = validCall(); 
+        System.out.println("Placing " + card.display());
         game.stack.cards.addLast(card);
         cards.remove(card);
+        game.unoSystem(this);
+        
+        if (cards.isEmpty()){
+            game.playerWon();
+        }
+
         game.changeTurn();
     }
 
-    private boolean validCall(String call){
-        System.out.println("Call: ");
+    private boolean validCall(){
+        System.out.print("Call: ");
+        String call = game.scanner.nextLine();
         switch (call.trim().toUpperCase()){
             case "" -> {return false;}
             case "C" -> selectCard(true);
             case "UNO" -> {return true;}
             default -> {
-                System.out.println("Insert a valid call: ");
-                game.scanner.nextLine();
-                String newCall = game.scanner.next();
-                validCall(newCall);
+                System.out.println("Insert a valid call.");
+                return validCall();
             }
         }
         return false;

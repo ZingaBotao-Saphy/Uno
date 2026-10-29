@@ -61,19 +61,6 @@ public class Deck{
                         }
                     }
 
-                    // if (FACE.values()[s].equals(FACE.REVERSE)){
-                    //     destination = -1;
-                    // }
-                    // else if (FACE.values()[s].equals(FACE.DRAW)){
-                    //     drawNumber = 2;
-                    //     number = 2;
-                    // }
-                    // else{
-                    //     number = -1;
-                    //     drawNumber = 0;
-                    //     destination = 1;
-                    // }
-
                     ArrayList<FACE> faces = new ArrayList<>();
                     faces.add(FACE.values()[s]);
                     Card card = new Card(faces, COLOUR.values()[c], number, drawNumber, destination);
